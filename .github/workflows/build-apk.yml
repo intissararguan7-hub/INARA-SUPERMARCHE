@@ -9,17 +9,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Accept licenses and Build
+      - name: Build INARA
         run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
           mkdir -p app/src/main/java/com/inara/supermarche
           cat > settings.gradle <<'EOF'
           pluginManagement {
             repositories { google(); mavenCentral(); gradlePluginPortal() }
           }
           dependencyResolutionManagement {
-            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
             repositories { google(); mavenCentral() }
           }
           include ':app'
@@ -32,42 +29,42 @@ jobs:
           EOF
           cat > app/build.gradle <<'EOF'
           plugins {
-           id 'com.android.application'
-           id 'org.jetbrains.kotlin.android'
+            id 'com.android.application'
+            id 'org.jetbrains.kotlin.android'
           }
           android {
-           namespace 'com.inara.supermarche'
-           compileSdk 34
-           defaultConfig {
-            applicationId "com.inara.supermarche"
-            minSdk 24
-            targetSdk 34
-            versionCode 1
-            versionName "1.0"
-           }
-           compileOptions {
-            sourceCompatibility JavaVersion.VERSION_1_8
-            targetCompatibility JavaVersion.VERSION_1_8
-           }
-           kotlinOptions { jvmTarget = '1.8' }
-           buildFeatures { compose true }
-           composeOptions { kotlinCompilerExtensionVersion '1.5.4' }
+            namespace 'com.inara.supermarche'
+            compileSdk 34
+            defaultConfig {
+              applicationId "com.inara.supermarche"
+              minSdk 24
+              targetSdk 34
+              versionCode 1
+              versionName "1.0"
+            }
+            compileOptions {
+              sourceCompatibility JavaVersion.VERSION_1_8
+              targetCompatibility JavaVersion.VERSION_1_8
+            }
+            kotlinOptions { jvmTarget = '1.8' }
+            buildFeatures { compose true }
+            composeOptions { kotlinCompilerExtensionVersion '1.5.4' }
           }
           dependencies {
-           implementation 'androidx.core:core-ktx:1.12.0'
-           implementation 'androidx.compose.ui:ui:1.5.4'
-           implementation 'androidx.compose.material3:material3:1.1.2'
-           implementation 'androidx.activity:activity-compose:1.8.2'
+            implementation 'androidx.core:core-ktx:1.12.0'
+            implementation 'androidx.compose.ui:ui:1.5.4'
+            implementation 'androidx.compose.material3:material3:1.1.2'
+            implementation 'androidx.activity:activity-compose:1.8.2'
           }
           EOF
           cat > app/src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-           <application android:label="INARA">
-            <activity android:name=".MainActivity" android:exported="true">
-             <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
-            </activity>
-           </application>
+            <application android:label="INARA">
+              <activity android:name=".MainActivity" android:exported="true">
+                <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+              </activity>
+            </application>
           </manifest>
           EOF
           cat > app/src/main/java/com/inara/supermarche/MainActivity.kt <<'EOF'
@@ -99,9 +96,11 @@ jobs:
             }
           }
           EOF
-          gradle wrapper --gradle-version 8.2
+          wget -q https://services.gradle.org/distributions/gradle-8.2-bin.zip
+          unzip -q gradle-8.2-bin.zip
+          ./gradle-8.2/bin/gradle wrapper --gradle-version 8.2
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: INARA-APK
