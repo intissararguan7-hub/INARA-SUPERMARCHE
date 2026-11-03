@@ -9,14 +9,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup Android
-        uses: android-actions/setup-android@v3
       - name: Build INARA
         run: |
           mkdir -p app/src/main/java/com/inara/supermarche
-          cat > settings.gradle <<'EOF'
-          include ':app'
-          EOF
+          echo "include ':app'" > settings.gradle
           cat > build.gradle <<'EOF'
           plugins {
             id 'com.android.application' version '8.2.0' apply false
@@ -53,6 +49,7 @@ jobs:
            implementation 'androidx.activity:activity-compose:1.8.2'
           }
           EOF
+          mkdir -p app/src/main
           cat > app/src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -80,12 +77,16 @@ jobs:
                 var s by remember{mutableStateOf(0)}
                 MaterialTheme{
                   Column(Modifier.padding(16.dp)){
-                    Text("INARA SUPERMARCHE Tit Mellil")
+                    Text("INARA SUPERMARCHE Tit Mellil", style=MaterialTheme.typography.headlineSmall)
+                    Spacer(Modifier.height(16.dp))
                     if(s==0){
                       Button(onClick={s=1}){Text("Bienvenue +212 SMS")}
                       Button(onClick={s=2}){Text("Admin INARA-ADMIN-2026")}
                       Button(onClick={s=3}){Text("Carte Allee 3 Etagere 2")}
-                    } else { Button(onClick={s=0}){Text("Retour")} }
+                    } else {
+                      Text("Page $s")
+                      Button(onClick={s=0}){Text("Retour")}
+                    }
                   }
                 }
               }
@@ -98,4 +99,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: INARA-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
