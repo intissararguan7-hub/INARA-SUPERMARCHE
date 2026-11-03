@@ -1,4 +1,4 @@
-name: Build APK
+name: Build INARA APK
 on: [push]
 jobs:
   build:
@@ -10,10 +10,92 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Setup Android
+        uses: android-actions/setup-android@v3
+      - name: Build INARA
         run: |
           mkdir -p app/src/main/java/com/inara/supermarche
-          echo "placeholder" > app/src/main/java/com/inara/supermarche/MainActivity.kt
+          cat > settings.gradle <<'EOF'
+          include ':app'
+          EOF
+          cat > build.gradle <<'EOF'
+          plugins {
+            id 'com.android.application' version '8.2.0' apply false
+            id 'org.jetbrains.kotlin.android' version '1.9.10' apply false
+          }
+          EOF
+          cat > app/build.gradle <<'EOF'
+          plugins {
+           id 'com.android.application'
+           id 'org.jetbrains.kotlin.android'
+          }
+          android {
+           namespace 'com.inara.supermarche'
+           compileSdk 34
+           defaultConfig {
+            applicationId "com.inara.supermarche"
+            minSdk 24
+            targetSdk 34
+            versionCode 1
+            versionName "1.0"
+           }
+           compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+           }
+           kotlinOptions { jvmTarget = '1.8' }
+           buildFeatures { compose true }
+           composeOptions { kotlinCompilerExtensionVersion '1.5.4' }
+          }
+          dependencies {
+           implementation 'androidx.core:core-ktx:1.12.0'
+           implementation 'androidx.compose.ui:ui:1.5.4'
+           implementation 'androidx.compose.material3:material3:1.1.2'
+           implementation 'androidx.activity:activity-compose:1.8.2'
+          }
+          EOF
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+           <application android:label="INARA">
+            <activity android:name=".MainActivity" android:exported="true">
+             <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+            </activity>
+           </application>
+          </manifest>
+          EOF
+          cat > app/src/main/java/com/inara/supermarche/MainActivity.kt <<'EOF'
+          package com.inara.supermarche
+          import android.os.Bundle
+          import androidx.activity.ComponentActivity
+          import androidx.activity.compose.setContent
+          import androidx.compose.material3.*
+          import androidx.compose.runtime.*
+          import androidx.compose.foundation.layout.*
+          import androidx.compose.ui.Modifier
+          import androidx.compose.ui.unit.dp
+          class MainActivity: ComponentActivity(){
+            override fun onCreate(b: Bundle?){
+              super.onCreate(b)
+              setContent{
+                var s by remember{mutableStateOf(0)}
+                MaterialTheme{
+                  Column(Modifier.padding(16.dp)){
+                    Text("INARA SUPERMARCHE Tit Mellil")
+                    if(s==0){
+                      Button(onClick={s=1}){Text("Bienvenue +212 SMS")}
+                      Button(onClick={s=2}){Text("Admin INARA-ADMIN-2026")}
+                      Button(onClick={s=3}){Text("Carte Allee 3 Etagere 2")}
+                    } else { Button(onClick={s=0}){Text("Retour")} }
+                  }
+                }
+              }
+            }
+          }
+          EOF
+          gradle wrapper --gradle-version 8.2
+          chmod +x gradlew
+          ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: INARA-APK
-          path: README.md
+          path: app/build/outputs/apk/debug/*.apk
