@@ -1,0 +1,19 @@
+name: Build APK
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Setup Android
+        run: |
+          mkdir -p app/src/main/java/com/inara/supermarche
+          echo "placeholder" > app/src/main/java/com/inara/supermarche/MainActivity.kt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: INARA-APK
+          path: README.md
